@@ -1,6 +1,4 @@
-# Samsung Jellyfin Installer (Orsay)
-
-# Jellyfin 2 Samsung
+# Jellyfin 2 Samsung (Orsay)
 
 <p align="center">
   <img src="https://github.com/PatrickSt1991/Samsung-Jellyfin-Installer/blob/master/.github/jellyfin-tizen-logo.svg" width="250" height="250" />
