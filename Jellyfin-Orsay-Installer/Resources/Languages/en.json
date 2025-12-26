@@ -1,0 +1,17 @@
+{
+  "App.Title": "Jellyfin Orsay Installer",
+  "Button.BuildStart": "Build & Start",
+  "Install.Waiting": "Waiting for TV…",
+  "Install.Done": "Installed ✔",
+  "Section.TV": "TV steps",
+  "Section.Server": "Server",
+  "TV.Step1": "1. Enable Developer Mode on the TV",
+  "TV.Step2": "2. Enter this PC IP:",
+  "TV.Step3": "3. Restart TV → Apps → Sync",
+  "Server.Requests": "Requests",
+  "Server.LastRequest": "Last request",
+  "Logs.Title": "TV Logs",
+  "Install.ThatWasEasy": "That was easy 🙂",
+  "Install.BuyMeABeer": "Buy me a beer ☕",
+  "Common.Close": "Close"
+}

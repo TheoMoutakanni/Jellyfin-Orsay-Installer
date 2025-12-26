@@ -1,0 +1,17 @@
+{
+  "App.Title": "Jellyfin Orsay Installatie",
+  "Button.BuildStart": "Bouwen & Starten",
+  "Install.Waiting": "Wachten op TV…",
+  "Install.Done": "Geïnstalleerd ✔",
+  "Section.TV": "TV stappen",
+  "Section.Server": "Server",
+  "TV.Step1": "1. Schakel ontwikkelaarsmodus in op de TV",
+  "TV.Step2": "2. Voer dit PC IP-adres in:",
+  "TV.Step3": "3. Herstart TV → Apps → Sync",
+  "Server.Requests": "Verzoeken",
+  "Server.LastRequest": "Laatste verzoek",
+  "Logs.Title": "TV Logs",
+  "Install.ThatWasEasy": "Dat was makkelijk 🙂",
+  "Install.BuyMeABeer": "Koop me een biertje ☕",
+  "Common.Close": "Close"
+}

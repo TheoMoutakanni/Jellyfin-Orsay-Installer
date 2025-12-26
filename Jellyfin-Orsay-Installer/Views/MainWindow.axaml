@@ -1,0 +1,218 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:Jellyfin.Orsay.Installer.ViewModels"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"
+        x:Class="Jellyfin.Orsay.Installer.Views.MainWindow"
+        x:DataType="vm:MainWindowViewModel"
+        Icon="/Assets/jelly2sams.ico"
+        Title="Jellyfin Orsay Installer"
+        Width="580"
+        Height="980"
+        Background="#F5F5F5"
+        Opened="Window_Opened">
+
+	<!-- ROOT LAYER -->
+	<Grid>
+
+		<!-- ===================== -->
+		<!-- NORMAL INSTALLER UI   -->
+		<!-- ===================== -->
+		<Grid RowDefinitions="Auto,*,Auto"
+              Margin="24">
+
+			<!-- HEADER -->
+			<Border Grid.Row="0"
+                    Classes="card"
+                    Background="#2C3E50"
+                    Padding="24,22"
+                    Margin="0,0,0,28">
+				<Grid ColumnDefinitions="*,Auto"
+                      ColumnSpacing="16"
+                      VerticalAlignment="Center">
+
+					<TextBlock Text="{Binding L[App.Title]}"
+                               FontSize="20"
+                               FontWeight="SemiBold"
+                               Foreground="White"/>
+
+					<ComboBox Grid.Column="1"
+                              Classes="header"
+                              MinWidth="110"
+                              ItemsSource="{Binding Languages}"
+                              SelectedItem="{Binding SelectedLanguage}"/>
+				</Grid>
+			</Border>
+
+			<!-- MAIN CONTENT -->
+			<ScrollViewer Grid.Row="1">
+				<StackPanel Spacing="20">
+
+					<!-- TV SETUP -->
+					<Border Classes="card">
+						<StackPanel Spacing="16">
+
+							<TextBlock Text="{Binding L[Section.TV]}"
+                                       FontSize="16"
+                                       FontWeight="SemiBold"/>
+
+							<TextBlock Text="{Binding L[TV.Step1]}"
+                                       TextWrapping="Wrap"
+                                       Foreground="#555"/>
+
+							<StackPanel Spacing="8">
+								<TextBlock Text="{Binding L[TV.Step2]}"
+                                           FontSize="12"
+                                           Foreground="#6C757D"/>
+
+								<TextBox Text="{Binding LocalIp}"
+                                         IsReadOnly="True"
+                                         Padding="12"
+                                         FontSize="14"
+                                         FontFamily="Consolas"/>
+							</StackPanel>
+
+							<TextBlock Text="{Binding L[TV.Step3]}"
+                                       TextWrapping="Wrap"
+                                       Foreground="#555"/>
+						</StackPanel>
+					</Border>
+
+					<!-- SERVER STATUS -->
+					<Border Classes="card">
+						<StackPanel Spacing="16">
+
+							<TextBlock Text="{Binding L[Section.Server]}"
+                                       FontSize="16"
+                                       FontWeight="SemiBold"/>
+
+							<Border Background="#2C3E50"
+                                    CornerRadius="12"
+                                    Padding="20">
+								<TextBlock Text="{Binding InstallStatus}"
+                                           FontSize="16"
+                                           FontWeight="Medium"
+                                           Foreground="White"
+                                           HorizontalAlignment="Center"/>
+							</Border>
+
+							<Grid ColumnDefinitions="*,*"
+                                  ColumnSpacing="24">
+								<StackPanel Spacing="4">
+									<TextBlock Text="{Binding L[Server.Requests]}"
+                                               FontSize="12"
+                                               Foreground="#6C757D"/>
+									<TextBlock Text="{Binding RequestsCount}"
+                                               FontSize="16"
+                                               FontWeight="SemiBold"/>
+								</StackPanel>
+
+								<StackPanel Grid.Column="1"
+                                            Spacing="4">
+									<TextBlock Text="{Binding L[Server.LastRequest]}"
+                                               FontSize="12"
+                                               Foreground="#6C757D"/>
+									<TextBlock Text="{Binding LastRequestText}"
+                                               FontSize="13"
+                                               TextTrimming="CharacterEllipsis"/>
+								</StackPanel>
+							</Grid>
+						</StackPanel>
+					</Border>
+
+					<!-- LOGS -->
+					<Border Classes="card">
+						<StackPanel Spacing="12">
+
+							<TextBlock Text="{Binding L[Logs.Title]}"
+                                       FontSize="16"
+                                       FontWeight="SemiBold"/>
+
+							<TextBox Text="{Binding Logs}"
+                                     IsReadOnly="True"
+                                     AcceptsReturn="True"
+                                     TextWrapping="Wrap"
+                                     FontFamily="Consolas"
+                                     FontSize="10.5"
+                                     Height="140"/>
+						</StackPanel>
+					</Border>
+
+				</StackPanel>
+			</ScrollViewer>
+
+			<!-- BUILD BUTTON -->
+			<Border Grid.Row="2"
+                    Classes="card"
+                    Padding="20"
+                    Margin="0,36,0,12">
+				<Button Classes="primary"
+                        Content="{Binding L[Button.BuildStart]}"
+                        Command="{Binding BuildAndStartCommand}"
+                        IsEnabled="{Binding CanBuildAndStart}"
+                        HorizontalAlignment="Stretch"/>
+			</Border>
+
+		</Grid>
+
+		<!-- ===================== -->
+		<!-- MODAL SUCCESS POPUP   -->
+		<!-- ===================== -->
+		<Border IsVisible="{Binding IsInstallDone}"
+                Background="#80000000"
+                ZIndex="1000">
+
+			<Grid HorizontalAlignment="Center"
+                  VerticalAlignment="Center">
+
+				<Border Classes="card"
+                        Width="360"
+                        Padding="36">
+
+					<StackPanel Spacing="18"
+                                HorizontalAlignment="Center">
+
+						<TextBlock Text="✅"
+                                   FontSize="56"
+                                   HorizontalAlignment="Center"/>
+
+						<TextBlock Text="{Binding InstallStatus}"
+                                   FontSize="18"
+                                   FontWeight="SemiBold"
+                                   TextAlignment="Center"
+                                   Foreground="#2C3E50"/>
+
+						<TextBlock Text="{Binding L[Install.ThatWasEasy]}"
+                                   FontSize="14"
+                                   TextAlignment="Center"
+                                   Foreground="#7F8C8D"/>
+
+						<StackPanel Orientation="Horizontal"
+                                    Spacing="16"
+                                    Margin="0,8,0,0"
+                                    HorizontalAlignment="Center">
+
+							<Button Content="{Binding L[Install.BuyMeABeer]}"
+                                    Command="{Binding BuyMeABeerCommand}"
+                                    Classes="primary"
+                                    Padding="0,14"
+                                    FontSize="14"/>
+
+							<Button Content="{Binding L[Common.Close]}"
+                                    Command="{Binding CloseCommand}"
+                                    Background="#E6E6E6"
+                                    Foreground="#2C3E50"
+                                    CornerRadius="12"
+                                    Padding="20,14"
+                                    FontSize="14"/>
+						</StackPanel>
+
+					</StackPanel>
+
+				</Border>
+			</Grid>
+		</Border>
+
+	</Grid>
+</Window>
