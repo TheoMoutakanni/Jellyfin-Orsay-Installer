@@ -5,7 +5,7 @@
 </p>
 
 <div align="center">
-  <p>A simple cross-platform installer to package and install the **Jellyfin Orsay widget** on Samsung Smart TVs (2011–2015).</p>
+  <p>A simple cross-platform installer to package and install the <strong>Jellyfin Orsay widget</strong> on Samsung Smart TVs (2011–2015).</p>
 
   <a href="https://discord.gg/7mga3zh8Cv"><img src="https://img.shields.io/badge/Ask%20it%20on%20Discord-7289DA?style=for-the-badge&logo=discord&logoColor=white" /></a>
 
