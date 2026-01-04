@@ -66,11 +66,26 @@
                                            FontSize="12"
                                            Foreground="#6C757D"/>
 
-								<TextBox Text="{Binding LocalIp}"
-                                         IsReadOnly="True"
-                                         Padding="12"
-                                         FontSize="14"
-                                         FontFamily="Consolas"/>
+								<Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+									<TextBox Text="{Binding IpInput}"
+                                             Padding="12"
+                                             FontSize="14"
+                                             FontFamily="Consolas"/>
+
+									<Button Grid.Column="1"
+                                            Content="{Binding L[Button.ApplyIp]}"
+                                            Command="{Binding ApplyIpCommand}"
+                                            Padding="16,12"
+                                            Background="#27AE60"
+                                            Foreground="White"
+                                            CornerRadius="8"
+											Cursor="Hand"/>
+								</Grid>
+
+								<TextBlock Text="{Binding AppliedIp, StringFormat='Applied: {0}'}"
+                                           FontSize="11"
+                                           Foreground="#27AE60"
+                                           FontStyle="Italic"/>
 							</StackPanel>
 
 							<TextBlock Text="{Binding L[TV.Step3]}"

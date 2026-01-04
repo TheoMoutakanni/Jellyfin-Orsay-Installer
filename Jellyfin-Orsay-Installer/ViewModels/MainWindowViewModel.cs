@@ -10,7 +10,7 @@ namespace Jellyfin.Orsay.Installer.ViewModels
     public sealed class MainWindowViewModel : ViewModelBase
     {
         // ===== Localization =====
-        public ObservableCollection<string> Languages { get; } = new() { "en", "nl" };
+        public ObservableCollection<string> Languages { get; } = new() { "en", "nl", "ru" };
         public LocalizationViewModel L { get; } = new();
 
         private string _selectedLanguage = SettingsService.LoadLanguage();
@@ -67,27 +67,55 @@ namespace Jellyfin.Orsay.Installer.ViewModels
         public event Action? CloseRequested;
 
         // ===== Info =====
-        public string LocalIp { get; }
+        private string _ipInput;
+        public string IpInput
+        {
+            get => _ipInput;
+            set
+            {
+                if (_ipInput == value) return;
+                _ipInput = value;
+                OnPropertyChanged();
+            }
+        }
+
+        private string _appliedIp;
+        public string AppliedIp => _appliedIp;
+
         public string OutputPath { get; }
-        public int Port { get; } = 8000;
+        public int Port { get; } = 80;
+
+        public ICommand ApplyIpCommand { get; }
 
         // ===== Constructor =====
         public MainWindowViewModel()
         {
-            LocalIp = _network.GetBestLocalIPv4() ?? "127.0.0.1";
+            var detectedIp = _network.GetBestLocalIPv4() ?? "127.0.0.1";
+            _ipInput = detectedIp;
+            _appliedIp = detectedIp;
+
             _packager = new OrsayPackager(AppContext.BaseDirectory + "Template");
             OutputPath = _packager.GetDefaultOutputPath();
 
             BuildAndStartCommand = new AsyncRelayCommand(BuildAndStartAsync);
             BuyMeABeerCommand = new RelayCommand(OpenKoFi);
             CloseCommand = new RelayCommand(() => CloseRequested?.Invoke());
+            ApplyIpCommand = new RelayCommand(ApplyIp);
+        }
+
+        private void ApplyIp()
+        {
+            _appliedIp = _ipInput;
+            OnPropertyChanged(nameof(AppliedIp));
+            AppendLog($"IP applied: {_appliedIp}");
         }
 
         // ===== Commands =====
         private async Task BuildAndStartAsync()
         {
             AppendLog("Packaging widget...");
-            _packager.BuildWidget(OutputPath, "Jellyfin", "1.0.0");
+            var result = _packager.BuildWidget(OutputPath, "Jellyfin", _appliedIp, Port);
+            AppendLog($"Widget packaged: {result.WidgetId} ({result.ZipSize:N0} bytes)");
 
             AppendLog("Starting server...");
             _server = new KestrelOrsayServer(OutputPath, Port);
@@ -114,10 +142,10 @@ namespace Jellyfin.Orsay.Installer.ViewModels
             _requests++;
             _lastRequest = path;
 
-            if (path.EndsWith("widgetlist.xml"))
+            if (path.EndsWith("widgetlist.xml", StringComparison.OrdinalIgnoreCase))
                 _sawWidgetList = true;
 
-            if (path.Contains("/Jellyfin/"))
+            if (path.EndsWith(".zip", StringComparison.OrdinalIgnoreCase))
                 _sawWidgetFiles = true;
 
             if (!_installed && _sawWidgetList && _sawWidgetFiles)
