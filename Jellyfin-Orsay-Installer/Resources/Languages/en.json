@@ -1,6 +1,7 @@
 {
   "App.Title": "Jellyfin Orsay Installer",
   "Button.BuildStart": "Build & Start",
+  "Button.ApplyIp": "Apply",
   "Install.Waiting": "Waiting for TV…",
   "Install.Done": "Installed ✔",
   "Section.TV": "TV steps",

@@ -1,5 +1,6 @@
-﻿using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
 using System;
@@ -29,16 +30,23 @@ namespace Jellyfin.Orsay.Installer.Services
                     w.UseUrls($"http://0.0.0.0:{_port}")
                      .Configure(app =>
                      {
+                         // Request logging middleware
                          app.Use(async (ctx, next) =>
                          {
                              OnRequest?.Invoke(ctx.Request.Path);
                              await next();
                          });
 
+                         // Configure MIME types for Samsung Orsay compatibility
+                         var contentTypeProvider = new FileExtensionContentTypeProvider();
+                         contentTypeProvider.Mappings[".xml"] = "text/xml; charset=utf-8";
+                         contentTypeProvider.Mappings[".zip"] = "application/zip";
+
                          app.UseStaticFiles(new StaticFileOptions
                          {
                              FileProvider = new PhysicalFileProvider(_root),
-                             ServeUnknownFileTypes = true
+                             ServeUnknownFileTypes = true,
+                             ContentTypeProvider = contentTypeProvider
                          });
                      });
                 })
