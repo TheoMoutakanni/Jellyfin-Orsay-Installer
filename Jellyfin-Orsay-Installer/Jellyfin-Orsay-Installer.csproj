@@ -9,11 +9,9 @@
     <RootNamespace>Jellyfin.Orsay.Installer</RootNamespace>
   </PropertyGroup>
 
-	<ItemGroup>
-		<PackageReference Include="Avalonia" Version="11.3.6" />
-		<PackageReference Include="Avalonia.Desktop" Version="11.3.6" />
-		<FrameworkReference Include="Microsoft.AspNetCore.App" />
-	</ItemGroup>
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Avalonia" Version="11.3.6" />
@@ -27,14 +25,14 @@
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.2.1" />
   </ItemGroup>
 
-	<ItemGroup>
-		<AvaloniaResource Include="Assets\**" />
-		<EmbeddedResource Include="Resources\Languages\*.json" />
-	</ItemGroup>
+  <ItemGroup>
+    <AvaloniaResource Include="Assets\**" />
+    <EmbeddedResource Include="Resources\Languages\*.json" />
+  </ItemGroup>
 
-	<ItemGroup>
-		<Content Include="Template\**\*">
-			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-		</Content>
-	</ItemGroup>
+  <ItemGroup>
+    <Content Include="Template\**\*">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
 </Project>
