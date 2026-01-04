@@ -10,7 +10,7 @@ namespace Jellyfin.Orsay.Installer.ViewModels
     public sealed class MainWindowViewModel : ViewModelBase
     {
         // ===== Localization =====
-        public ObservableCollection<string> Languages { get; } = new() { "en", "nl" };
+        public ObservableCollection<string> Languages { get; } = new() { "en", "nl", "ru" };
         public LocalizationViewModel L { get; } = new();
 
         private string _selectedLanguage = SettingsService.LoadLanguage();
