@@ -1,0 +1,196 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:Jellyfin.Orsay.Installer.ViewModels"
+        xmlns:conv="using:Jellyfin.Orsay.Installer.Converters"
+        xmlns:models="using:Jellyfin.Orsay.Installer.Models"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"
+        x:Class="Jellyfin.Orsay.Installer.Views.MainWindow"
+        x:DataType="vm:MainWindowViewModel"
+        Icon="/Assets/jelly2sams.ico"
+        Title="Jellyfin Installer: Samsung Smart TV (Orsay) models (2011-2015)"
+        Width="800"
+        Height="880"
+        MinWidth="700"
+        MinHeight="780"
+        WindowStartupLocation="CenterScreen"
+        Background="#F5F5F5">
+
+    <Grid RowDefinitions="Auto,*,Auto,Auto">
+
+        <!-- =================== -->
+        <!-- HEADER              -->
+        <!-- =================== -->
+        <Border Grid.Row="0"
+                Background="#2C3E50"
+                Padding="24,16">
+            <Grid ColumnDefinitions="Auto,*,Auto,Auto">
+
+                <!-- Logo/Title -->
+                <StackPanel Orientation="Horizontal" Spacing="12">
+                    <Image Source="/Assets/jelly2sams.ico"
+                           Width="32" Height="32"/>
+                    <TextBlock Text="{Binding L[App.Title]}"
+                               FontSize="18"
+                               FontWeight="SemiBold"
+                               Foreground="White"
+                               VerticalAlignment="Center"/>
+                </StackPanel>
+
+                <!-- Language selector -->
+                <ComboBox Grid.Column="2"
+                          Classes="header"
+                          MinWidth="100"
+                          ItemsSource="{Binding Languages}"
+                          SelectedItem="{Binding SelectedLanguage}"
+                          Margin="0,0,12,0">
+
+                    <!-- Compact view for collapsed state: 🇷🇺 RU -->
+                    <ComboBox.SelectionBoxItemTemplate>
+                        <DataTemplate DataType="{x:Type models:LanguageInfo}">
+                            <StackPanel Orientation="Horizontal" Spacing="6">
+                                <TextBlock Text="{Binding FlagEmoji}"
+                                           FontSize="14"
+                                           VerticalAlignment="Center"/>
+                                <TextBlock Text="{Binding CodeUpper}"
+                                           FontWeight="SemiBold"
+                                           VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </DataTemplate>
+                    </ComboBox.SelectionBoxItemTemplate>
+
+                    <!-- Full view for dropdown: 🇷🇺 Русский (Russian) -->
+                    <ComboBox.ItemTemplate>
+                        <DataTemplate DataType="{x:Type models:LanguageInfo}">
+                            <StackPanel Orientation="Horizontal" Spacing="8" MinWidth="180">
+                                <TextBlock Text="{Binding FlagEmoji}"
+                                           FontSize="16"
+                                           VerticalAlignment="Center"/>
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="{Binding NativeName}"
+                                               FontWeight="SemiBold"
+                                               VerticalAlignment="Center"/>
+                                    <TextBlock Text=" ("
+                                               Foreground="#888"
+                                               VerticalAlignment="Center"/>
+                                    <TextBlock Text="{Binding EnglishName}"
+                                               Foreground="#888"
+                                               VerticalAlignment="Center"/>
+                                    <TextBlock Text=")"
+                                               Foreground="#888"
+                                               VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </StackPanel>
+                        </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                </ComboBox>
+
+                <!-- Logs button -->
+                <Button Grid.Column="3"
+                        Content="{Binding L[Logs.OpenButton]}"
+                        Command="{Binding Wizard.OpenLogsCommand}"
+                        Padding="12,6"
+                        Background="#34495E"
+                        Foreground="White"
+                        CornerRadius="6"
+                        Cursor="Hand"/>
+            </Grid>
+        </Border>
+
+        <!-- =================== -->
+        <!-- PAGE CONTENT        -->
+        <!-- =================== -->
+        <ContentControl Grid.Row="1"
+                        Content="{Binding Wizard.CurrentPage}"
+                        Margin="0,8"/>
+
+        <!-- =================== -->
+        <!-- STEP INDICATORS     -->
+        <!-- =================== -->
+        <StackPanel Grid.Row="2"
+                    Orientation="Horizontal"
+                    HorizontalAlignment="Center"
+                    Spacing="12"
+                    Margin="0,16">
+
+            <!-- Step 1 -->
+            <Ellipse Width="12" Height="12"
+                     Fill="{Binding Wizard.CurrentStep, Converter={x:Static conv:StepIndicatorConverter.Instance}, ConverterParameter=1}"/>
+
+            <!-- Step 2 -->
+            <Ellipse Width="12" Height="12"
+                     Fill="{Binding Wizard.CurrentStep, Converter={x:Static conv:StepIndicatorConverter.Instance}, ConverterParameter=2}"/>
+
+            <!-- Step 3 -->
+            <Ellipse Width="12" Height="12"
+                     Fill="{Binding Wizard.CurrentStep, Converter={x:Static conv:StepIndicatorConverter.Instance}, ConverterParameter=3}"/>
+
+            <!-- Step 4 -->
+            <Ellipse Width="12" Height="12"
+                     Fill="{Binding Wizard.CurrentStep, Converter={x:Static conv:StepIndicatorConverter.Instance}, ConverterParameter=4}"/>
+
+            <!-- Step 5 -->
+            <Ellipse Width="12" Height="12"
+                     Fill="{Binding Wizard.CurrentStep, Converter={x:Static conv:StepIndicatorConverter.Instance}, ConverterParameter=5}"/>
+        </StackPanel>
+
+        <!-- =================== -->
+        <!-- FOOTER NAVIGATION   -->
+        <!-- =================== -->
+        <Border Grid.Row="3"
+                Background="White"
+                Padding="24,16"
+                BoxShadow="0 -2 8 0 #10000000">
+            <Grid ColumnDefinitions="Auto,*,Auto">
+
+                <!-- Step indicator text -->
+                <TextBlock Text="{Binding Wizard.StepIndicator}"
+                           FontSize="14"
+                           Foreground="#7F8C8D"
+                           VerticalAlignment="Center"/>
+
+                <!-- Navigation buttons -->
+                <StackPanel Grid.Column="2"
+                            Orientation="Horizontal"
+                            Spacing="12">
+
+                    <!-- Back button -->
+                    <Button Content="{Binding Wizard.L[Common.Back]}"
+                            Command="{Binding Wizard.GoBackCommand}"
+                            IsVisible="{Binding Wizard.CanGoBack}"
+                            Padding="20,12"
+                            Background="#E8E8E8"
+                            Foreground="#555"
+                            CornerRadius="8"
+                            Cursor="Hand"/>
+
+                    <!-- Next button - two buttons with different text -->
+                    <Panel IsVisible="{Binding Wizard.CanGoNext}">
+                        <!-- "Get Started" on first step -->
+                        <Button Content="{Binding Wizard.L[Wizard.GetStarted]}"
+                                Command="{Binding Wizard.GoNextCommand}"
+                                IsVisible="{Binding Wizard.IsFirstStep}"
+                                Padding="24,12"
+                                Background="#3498DB"
+                                Foreground="White"
+                                FontWeight="SemiBold"
+                                CornerRadius="8"
+                                Cursor="Hand"/>
+                        <!-- "Next" on other steps -->
+                        <Button Content="{Binding Wizard.L[Common.Next]}"
+                                Command="{Binding Wizard.GoNextCommand}"
+                                IsVisible="{Binding !Wizard.IsFirstStep}"
+                                Padding="24,12"
+                                Background="#3498DB"
+                                Foreground="White"
+                                FontWeight="SemiBold"
+                                CornerRadius="8"
+                                Cursor="Hand"/>
+                    </Panel>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+    </Grid>
+</Window>

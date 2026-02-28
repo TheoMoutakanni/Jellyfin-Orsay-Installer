@@ -1,0 +1,71 @@
+<Application xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="Jellyfin.Orsay.Installer.App"
+             xmlns:local="using:Jellyfin.Orsay.Installer"
+             RequestedThemeVariant="Default">
+
+	<Application.DataTemplates>
+		<local:ViewLocator/>
+	</Application.DataTemplates>
+
+	<Application.Styles>
+		<FluentTheme />
+
+		<!-- CARD -->
+		<Style Selector="Border.card">
+			<Setter Property="Background" Value="White"/>
+			<Setter Property="CornerRadius" Value="12"/>
+			<Setter Property="Padding" Value="20"/>
+			<Setter Property="BoxShadow" Value="0 6 16 0 #20000000"/>
+			<Setter Property="Margin" Value="0,0,0,16"/>
+		</Style>
+
+		<!-- COMBOBOX -->
+		<Style Selector="ComboBox">
+			<Setter Property="MinHeight" Value="36"/>
+			<Setter Property="Padding" Value="10,6"/>
+			<Setter Property="FontSize" Value="13"/>
+		</Style>
+
+		<Style Selector="ComboBox.header">
+			<Setter Property="MinHeight" Value="34"/>
+			<Setter Property="FontSize" Value="12"/>
+		</Style>
+
+		<!-- PRIMARY BUTTON -->
+		<!-- PRIMARY BUTTON (FIXED CENTERING) -->
+		<Style Selector="Button.primary">
+			<Setter Property="Height" Value="56"/>
+			<Setter Property="FontSize" Value="16.5"/>
+			<Setter Property="FontWeight" Value="SemiBold"/>
+
+			<!-- Visuals -->
+			<Setter Property="Background" Value="#2C3E50"/>
+			<Setter Property="Foreground" Value="White"/>
+			<Setter Property="CornerRadius" Value="12"/>
+
+			<!-- 🔴 THESE ARE THE IMPORTANT FIXES -->
+			<Setter Property="HorizontalContentAlignment" Value="Center"/>
+			<Setter Property="VerticalContentAlignment" Value="Center"/>
+			<Setter Property="Padding" Value="0"/>
+
+			<!-- Cursor -->
+			<Setter Property="Cursor" Value="Hand"/>
+		</Style>
+
+
+		<Style Selector="Button.primary:pointerover">
+			<Setter Property="Background" Value="#34495E"/>
+		</Style>
+
+		<Style Selector="Button.primary:pressed">
+			<Setter Property="Background" Value="#1A252F"/>
+		</Style>
+
+		<Style Selector="Button.primary:disabled">
+			<Setter Property="Background" Value="#95A5A6"/>
+			<Setter Property="Foreground" Value="#ECF0F1"/>
+		</Style>
+
+	</Application.Styles>
+</Application>
