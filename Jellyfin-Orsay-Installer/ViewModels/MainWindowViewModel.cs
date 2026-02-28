@@ -84,6 +84,7 @@ namespace Jellyfin.Orsay.Installer.ViewModels
 
         public string OutputPath { get; }
         public int Port { get; } = 80;
+        public int AltPort { get; } = 7681;
 
         public ICommand ApplyIpCommand { get; }
 
@@ -120,7 +121,7 @@ namespace Jellyfin.Orsay.Installer.ViewModels
                 AppendLog($"Widget packaged: {result.WidgetId} ({result.ZipSize:N0} bytes)");
 
                 AppendLog("Starting server...");
-                _server = new KestrelOrsayServer(OutputPath, Port);
+                _server = new KestrelOrsayServer(OutputPath, Port, AltPort);
                 _server.OnRequest += HandleRequest;
                 _server.OnLog += AppendLog;
                 _server.Start();

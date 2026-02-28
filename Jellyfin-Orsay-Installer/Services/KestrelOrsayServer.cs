@@ -3,7 +3,9 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
 using System;
+using System.Collections.Generic;
 
 namespace Jellyfin.Orsay.Installer.Services
 {
@@ -11,23 +13,39 @@ namespace Jellyfin.Orsay.Installer.Services
     {
         private IHost? _host;
         private readonly string _root;
-        private readonly int _port;
+        private readonly int[] _ports;
 
         public event Action<string>? OnRequest;
         public event Action<string>? OnLog;
 
-        public KestrelOrsayServer(string root, int port)
+        public KestrelOrsayServer(string root, params int[] ports)
         {
             _root = root;
-            _port = port;
+            _ports = ports;
         }
 
         public void Start()
         {
+            var boundPorts = new List<int>();
+
             _host = Host.CreateDefaultBuilder()
                 .ConfigureWebHostDefaults(w =>
                 {
-                    w.UseUrls($"http://0.0.0.0:{_port}")
+                    w.UseKestrel(options =>
+                     {
+                         foreach (var port in _ports)
+                         {
+                             try
+                             {
+                                 options.ListenAnyIP(port);
+                                 boundPorts.Add(port);
+                             }
+                             catch (Exception)
+                             {
+                                 OnLog?.Invoke($"Warning: Could not bind port {port} (in use or no permission)");
+                             }
+                         }
+                     })
                      .Configure(app =>
                      {
                          // Request logging middleware
@@ -53,7 +71,7 @@ namespace Jellyfin.Orsay.Installer.Services
                 .Build();
 
             _host.Start();
-            OnLog?.Invoke($"Server started on port {_port}");
+            OnLog?.Invoke($"Server started on port(s) {string.Join(", ", boundPorts)}");
         }
 
         public void Dispose()
