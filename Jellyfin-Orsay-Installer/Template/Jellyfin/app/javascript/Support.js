@@ -1231,7 +1231,10 @@ Support.processHomePageMenu = function (menuItem) {
 		break;
 	case "Search":
 		GuiPage_Search.start();
-		break;		
+		break;
+	case "SyncPlay":
+		GuiPage_SyncPlay.start();
+		break;
 	case "Settings":
 		GuiPage_Settings.start();
 		break;		

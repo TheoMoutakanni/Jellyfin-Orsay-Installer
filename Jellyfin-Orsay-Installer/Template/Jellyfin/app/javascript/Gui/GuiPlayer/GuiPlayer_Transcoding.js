@@ -48,6 +48,16 @@ GuiPlayer_Transcoding.start = function(showId, MediaSource,MediaSourceIndex, vid
 	var streamparams = "";
 	var transcodeStatus = "";
 
+	//Check if image subtitle burn-in is needed (PGS, VOBSUB, etc.)
+	var needsBurnIn = false;
+	if (subtitleIndex > -1) {
+		var subStream = this.MediaSource.MediaStreams[subtitleIndex];
+		if (subStream && !subStream.IsTextSubtitleStream) {
+			needsBurnIn = true;
+			FileLog.write("Video : Image subtitle detected (index " + subtitleIndex + ") - burn-in required");
+		}
+	}
+
 	//If audiocheck failed convert to AAC OR AC3 depending on setting
 	//If audiocheck ok convert to AAC or dont convert & leave as original codec
 
@@ -62,19 +72,29 @@ GuiPlayer_Transcoding.start = function(showId, MediaSource,MediaSourceIndex, vid
 	} else {
 	   streamAudioCodec = (File.getTVProperty("Dolby") && File.getTVProperty("AACtoDolby") && fileAudioCodec == "aac") ? "ac3" : "aac";
 	}
-	if (this.isVideo && this.isAudio && convertAACtoDolby == false) {
+
+	//Image subtitle burn-in forces full video transcoding
+	if (needsBurnIn && this.isVideo && this.isAudio && convertAACtoDolby == false) {
+		//Would have been direct play or stream copy, but burn-in forces full transcode
+		transcodeStatus = "Transcoding Audio & Video (Subtitle Burn-in)";
+		streamparams = '/Stream.ts?VideoStreamIndex='+this.videoIndex+'&AudioStreamIndex='+this.audioIndex+'&VideoCodec=h264&Profile=high&Level=41&MaxVideoBitDepth=8&MaxWidth=1920&VideoBitrate='+this.bitRateToUse+'&AudioCodec=' + streamAudioCodec +'&AudioBitrate=360000&MaxAudioChannels=6&MediaSourceId='+this.MediaSource.Id + '&SubtitleStreamIndex='+subtitleIndex+'&SubtitleMethod=Encode&api_key=' + Server.getAuthToken();
+	} else if (this.isVideo && this.isAudio && convertAACtoDolby == false) {
 		if (isFirstAudioIndex == true) {
 			transcodeStatus = "Direct Play";
 			streamparams = '/Stream.'+this.MediaSource.Container+'?static=true&MediaSourceId='+this.MediaSource.Id + '&api_key=' + Server.getAuthToken();
-		} else {			
+		} else {
 			transcodeStatus = "Stream Copy - Audio Not First Track";
 			streamparams = '/Stream.ts?VideoStreamIndex='+this.videoIndex+'&AudioStreamIndex='+this.audioIndex+'&VideoCodec=copy&AudioCodec='+ streamAudioCodec +'&MediaSourceId='+this.MediaSource.Id + '&api_key=' + Server.getAuthToken();
-		}	
-	} else if (this.isVideo == false) {
-		transcodeStatus = "Transcoding Audio & Video";	
-		streamparams = '/Stream.ts?VideoStreamIndex='+this.videoIndex+'&AudioStreamIndex='+this.audioIndex+'&VideoCodec=h264&Profile=high&Level=41&MaxVideoBitDepth=8&MaxWidth=1920&VideoBitrate='+this.bitRateToUse+'&AudioCodec=' + streamAudioCodec +'&AudioBitrate=360000&MaxAudioChannels=6&MediaSourceId='+this.MediaSource.Id + '&api_key=' + Server.getAuthToken();	
+		}
+	} else if (this.isVideo == false || needsBurnIn) {
+		transcodeStatus = needsBurnIn ? "Transcoding Audio & Video (Subtitle Burn-in)" : "Transcoding Audio & Video";
+		streamparams = '/Stream.ts?VideoStreamIndex='+this.videoIndex+'&AudioStreamIndex='+this.audioIndex+'&VideoCodec=h264&Profile=high&Level=41&MaxVideoBitDepth=8&MaxWidth=1920&VideoBitrate='+this.bitRateToUse+'&AudioCodec=' + streamAudioCodec +'&AudioBitrate=360000&MaxAudioChannels=6&MediaSourceId='+this.MediaSource.Id;
+		if (needsBurnIn) {
+			streamparams += '&SubtitleStreamIndex='+subtitleIndex+'&SubtitleMethod=Encode';
+		}
+		streamparams += '&api_key=' + Server.getAuthToken();
 	} else if (this.isVideo == true && (this.isAudio == false || convertAACtoDolby == true)) {
-		transcodeStatus = "Transcoding Audio";	
+		transcodeStatus = "Transcoding Audio";
 		streamparams = '/Stream.ts?VideoStreamIndex='+this.videoIndex+'&AudioStreamIndex='+this.audioIndex+'&VideoCodec=copy&AudioCodec='+ streamAudioCodec +'&audioBitrate=360000&MaxAudioChannels=6&MediaSourceId='+this.MediaSource.Id + '&api_key=' + Server.getAuthToken();
 	}
 	var url = Server.getServerAddr() + '/Videos/' + showId + streamparams + '&DeviceId='+Server.getDeviceID();

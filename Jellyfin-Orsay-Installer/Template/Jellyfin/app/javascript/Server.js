@@ -587,6 +587,30 @@ Server.Authenticate = function(UserId, UserName, Password) {
     }
 }
 
+Server.authenticateWithQuickConnect = function(secret) {
+	var url = Server.getServerAddr() + "/Users/AuthenticateWithQuickConnect";
+	var params = JSON.stringify({"Secret": secret});
+
+	var xmlHttp = new XMLHttpRequest();
+	xmlHttp.open("POST", url, false);
+	xmlHttp = this.setRequestHeaders(xmlHttp);
+	xmlHttp.send(params);
+
+	if (xmlHttp.status != 200) {
+		FileLog.write("QuickConnect : Auth failed with status " + xmlHttp.status);
+		return false;
+	}
+
+	var session = JSON.parse(xmlHttp.responseText);
+	this.AuthenticationToken = session.AccessToken;
+	this.setUserID(session.User.Id);
+	this.setUserName(session.User.Name);
+	FileLog.write("User " + session.User.Name + " authenticated via Quick Connect.");
+	Server.postCapabilities();
+	RemoteControl.connect();
+	return true;
+}
+
 Server.postCapabilities = function() {
 	var url = this.serverAddr + "/Sessions/Capabilities/Full";
 	var xmlHttp = new XMLHttpRequest();
@@ -596,11 +620,10 @@ Server.postCapabilities = function() {
 			"SupportsMediaControl": true,
 			"SupportsPersistentIdentifier": false,
 			"SupportedCommands": [
-				"Play", "Pause", "Unpause", "Stop", "Seek",
-				"NextTrack", "PreviousTrack",
 				"SetAudioStreamIndex", "SetSubtitleStreamIndex",
-				"Mute", "Unmute", "SetVolume",
-				"DisplayContent"
+				"Mute", "Unmute", "ToggleMute", "SetVolume",
+				"DisplayContent", "DisplayMessage", "GoHome",
+				"SyncPlayJoin", "SyncPlayLeave"
 			]
 		});
 		xmlHttp.open("POST", url, true);

@@ -31,11 +31,14 @@
 		<script src="app/javascript/Support/polyfill.js"></script>
 		<script src="app/javascript/Support/ServerVersion.js"></script>
 		<script src="app/javascript/Support/RemoteControl.js"></script>
+		<script src="app/javascript/Support/SyncPlay.js"></script>
+		<script src="app/javascript/Support/Trickplay.js"></script>
 		<script src="app/javascript/Support/srt-parser.js"></script>
 		<script src="app/javascript/Gui/GuiPage_NewServer.js"></script>
 		<script src="app/javascript/Gui/GuiPage_Servers.js"></script>
 		<script src="app/javascript/Gui/GuiUsers.js"></script>
 		<script src="app/javascript/Gui/GuiUsers_Manual.js"></script>
+		<script src="app/javascript/Gui/GuiUsers_QuickConnect.js"></script>
 		<script src="app/javascript/Gui/GuiMainMenu.js"></script>
 		<script src="app/javascript/Gui/GuiTV_Show.js"></script>
 		<script src="app/javascript/Gui/GuiTV_Upcoming.js"></script>
@@ -67,6 +70,7 @@
 		<script src="app/javascript/Gui/GuiPage_Playlist.js"></script>
 		<script src="app/javascript/Gui/GuiPage_AddToPlaylist.js"></script>
 		<script src="app/javascript/Gui/GuiPage_Search.js"></script>
+		<script src="app/javascript/Gui/GuiPage_SyncPlay.js"></script>
 		<script src="app/javascript/Gui/GuiPage_TvChannel.js"></script>
 		
 		<object id="pluginPlayer" border=0 classid="clsid:SAMSUNG-INFOLINK-PLAYER"></object>
@@ -90,6 +94,7 @@
 		<a href="javascript:void(0);" id="GuiUsers" onkeydown="GuiUsers.keyDown();"></a>
 		<a href="javascript:void(0);" id="GuiUsers_Pwd" onkeydown="GuiUsers.keyDownPassword();"></a>
 		<a href="javascript:void(0);" id="GuiUsers_Manual" onkeydown="GuiUsers_Manual.keyDown();"></a>
+		<a href="javascript:void(0);" id="GuiUsers_QuickConnect" onkeydown="GuiUsers_QuickConnect.keyDown();"></a>
 		<a href="javascript:void(0);" id="GuiUsers_Manual_Pwd" onkeydown="GuiUsers_Manual.keyDownPassword();"></a>
 		<a href="javascript:void(0);" id="GuiHelper" onkeydown="GuiHelper.keyDown();"></a>
 		<a href="javascript:void(0);" id="GuiMainMenu" onkeydown="GuiMainMenu.keyDown();"></a>
@@ -128,6 +133,7 @@
 		<a href="javascript:void(0);" id="GuiPage_Playlist" onkeydown="GuiPage_Playlist.keyDown();"></a>
 		<a href="javascript:void(0);" id="GuiPage_AddToPlaylist" onkeydown="GuiPage_AddToPlaylist.keyDown();" onfocus="GuiPage_AddToPlaylist.onFocus();"></a>
 		<a href="javascript:void(0);" id="GuiPage_Search" onkeydown="GuiPage_Search.keyDown();" onfocus="GuiPage_Search.onFocus();"></a>
+		<a href="javascript:void(0);" id="GuiPage_SyncPlay" onkeydown="GuiPage_SyncPlay.keyDown();" onfocus="GuiPage_SyncPlay.onFocus();"></a>
 		<a href="javascript:void(0);" id="GuiPage_TvChannel" onkeydown="GuiPage_TvChannel.keyDown();" onfocus="GuiPage_TvChannel.onFocus();"></a>
 
 		<!-- IME (on-screen keypad) loader has to be in the body. -->
@@ -245,6 +251,7 @@
 				<div id="guiPlayer_Tools_SliderBarCurrent" class="videoTools_SliderBarCurrent"></div>
 			</div>
 			
+			<div id="guiPlayer_Trickplay" style="visibility:hidden;position:absolute;top:150px;left:380px;z-index:100;border:2px solid #00a4dc;background-color:#000"></div>
 			<div id="guiPlayer_Subtitles" class="videoSubtitles" style="visibility:hidden"></div>
 	
 			<!--  Menu -->

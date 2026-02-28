@@ -113,17 +113,26 @@ namespace Jellyfin.Orsay.Installer.ViewModels
         // ===== Commands =====
         private async Task BuildAndStartAsync()
         {
-            AppendLog("Packaging widget...");
-            var result = _packager.BuildWidget(OutputPath, "Jellyfin", _appliedIp, Port);
-            AppendLog($"Widget packaged: {result.WidgetId} ({result.ZipSize:N0} bytes)");
+            try
+            {
+                AppendLog("Packaging widget...");
+                var result = _packager.BuildWidget(OutputPath, "Jellyfin", _appliedIp, Port);
+                AppendLog($"Widget packaged: {result.WidgetId} ({result.ZipSize:N0} bytes)");
 
-            AppendLog("Starting server...");
-            _server = new KestrelOrsayServer(OutputPath, Port);
-            _server.OnRequest += HandleRequest;
-            _server.OnLog += AppendLog;
-            _server.Start();
+                AppendLog("Starting server...");
+                _server = new KestrelOrsayServer(OutputPath, Port);
+                _server.OnRequest += HandleRequest;
+                _server.OnLog += AppendLog;
+                _server.Start();
 
-            OnPropertyChanged(nameof(CanBuildAndStart));
+                OnPropertyChanged(nameof(CanBuildAndStart));
+            }
+            catch (Exception ex)
+            {
+                _server = null;
+                AppendLog($"Error: {ex.Message}");
+                OnPropertyChanged(nameof(CanBuildAndStart));
+            }
         }
 
         private void OpenKoFi()

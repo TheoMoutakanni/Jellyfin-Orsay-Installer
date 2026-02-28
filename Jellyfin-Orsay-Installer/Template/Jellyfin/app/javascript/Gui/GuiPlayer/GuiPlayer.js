@@ -103,9 +103,12 @@ GuiPlayer.start = function(title,url,startingPlaybackTick,playedFromPage,isCinem
     	}
     }
 
+    //Load trickplay data if available
+    Trickplay.load(this.PlayerData);
+
     //Take focus to no input
 	document.getElementById("NoKeyInput").focus();
-    
+
 	//Load Versions
     GuiPlayer_Versions.start(this.PlayerData,startingPlaybackTick,playedFromPage);
 };
@@ -128,6 +131,7 @@ GuiPlayer.startPlayback = function(TranscodeAlg, resumeTicksSamsung) {
 	this.PlayerDataSubtitle = null;
 	this.subtitleShowingIndex = 0;
 	this.subtitleSeeking = false;
+	this.playingBurnInSubtitle = false;
 	this.videoStartTime = resumeTicksSamsung;
 	
 	//Expand TranscodeAlg to useful variables!!!
@@ -138,7 +142,15 @@ GuiPlayer.startPlayback = function(TranscodeAlg, resumeTicksSamsung) {
 	this.playingVideoIndex = TranscodeAlg[3];
 	this.playingAudioIndex = TranscodeAlg[4];
 	this.playingSubtitleIndex = TranscodeAlg[5];
-	
+
+	//Check if burn-in subtitle is active (image-based subtitle)
+	if (this.playingSubtitleIndex > -1) {
+		var subStream = this.playingMediaSource.MediaStreams[this.playingSubtitleIndex];
+		if (subStream && !subStream.IsTextSubtitleStream) {
+			this.playingBurnInSubtitle = true;
+		}
+	}
+
 	//Set PlayMethod
 	if (this.playingTranscodeStatus == "Direct Play"){
 		this.PlayMethod = "DirectPlay";
@@ -231,14 +243,14 @@ GuiPlayer.setSubtitles = function(selectedSubtitleIndex) {
 		if (Stream.IsTextSubtitleStream) {
 			//Set Colour & Size from User Settings
 			Support.styleSubtitles("guiPlayer_Subtitles");
-			
+
 		    var url = Server.getCustomURL("/Videos/"+ this.PlayerData.Id+"/"+this.playingMediaSource.Id+"/Subtitles/"+selectedSubtitleIndex+"/Stream.srt");
 		    this.PlayerDataSubtitle = Server.getSubtitles(url);
 			FileLog.write("Subtitles : loaded "+url);
-			
-		    if (this.PlayerDataSubtitle == null) { 
-		    	this.playingSubtitleIndex = -1; 
-		    	return; 
+
+		    if (this.PlayerDataSubtitle == null) {
+		    	this.playingSubtitleIndex = -1;
+		    	return;
 		    } else {
 		    	this.playingSubtitleIndex = selectedSubtitleIndex;
 		    }
@@ -252,6 +264,11 @@ GuiPlayer.setSubtitles = function(selectedSubtitleIndex) {
 			this.PlayerDataSubtitle.sort(function(a, b) {
 				return a.startTime - b.startTime;
 			});
+		} else {
+			//Image-based subtitle (PGS, VOBSUB, etc.) - burn-in handled server-side, no client overlay
+			this.PlayerDataSubtitle = null;
+			this.playingSubtitleIndex = selectedSubtitleIndex;
+			FileLog.write("Subtitles : image subtitle index " + selectedSubtitleIndex + " (server burn-in)");
 		}
 	}
 };
@@ -606,6 +623,10 @@ GuiPlayer.handleLeftKey = function() {
 };
 
 GuiPlayer.handlePlayKey = function() {
+	if (SyncPlay.isEnabled && this.Status == "PAUSED") {
+		SyncPlay.requestUnpause();
+		return;
+	}
 	if (this.Status == "PAUSED") {
 		FileLog.write("Playback : Play by User");
 		this.Status = "PLAYING";
@@ -660,6 +681,10 @@ GuiPlayer.handleStopKey = function() {
 };
 
 GuiPlayer.handlePauseKey = function() {
+	if (SyncPlay.isEnabled) {
+		SyncPlay.requestPause();
+		return;
+	}
 	if(this.Status == "PLAYING") {
 		document.getElementById("guiPlayer_Subtitles").style.bottom="100px";
 		if (document.getElementById("guiPlayer_Osd").style.opacity == 0) {
@@ -688,6 +713,10 @@ GuiPlayer.handlePauseKey = function() {
 
 GuiPlayer.handleFFKey = function() {
 	FileLog.write("Playback : Fast Forward");
+    if (SyncPlay.isEnabled && this.Status == "PLAYING") {
+    	SyncPlay.requestSeek((this.currentTime + 30000) * 10000);
+    	return;
+    }
     if(this.Status == "PLAYING") {
     	if (this.PlayMethod == "DirectPlay") {
     		FileLog.write("Playback : Fast Forward : Direct Play");
@@ -697,10 +726,15 @@ GuiPlayer.handleFFKey = function() {
     		FileLog.write("Playback : Fast Forward : Transcoding");
     		this.newPlaybackPosition((this.currentTime + 30000) * 10000);
     	}
+		//Show trickplay thumbnail at target position
+		if (Trickplay.isAvailable()) {
+			Trickplay.showThumbnail(this.currentTime + 30000);
+			setTimeout(function() { Trickplay.hideThumbnail(); }, 3000);
+		}
 		document.getElementById("guiPlayer_Subtitles").style.bottom="100px";
 		if (document.getElementById("guiPlayer_Osd").style.opacity == 0) {
 			$('#guiPlayer_Osd').css('opacity',0).animate({opacity:1}, 500);
-		} 
+		}
 		if (this.infoTimer != null){
 			clearTimeout(this.infoTimer);
 		}
@@ -712,12 +746,16 @@ GuiPlayer.handleFFKey = function() {
 				document.getElementById("guiPlayer_Subtitles").style.bottom="60px";
 			}, 500);
 			$('#guiPlayer_Osd').css('opacity',1).animate({opacity:0}, 500);
-		}, 3000);    	
-    }  
+		}, 3000);
+    }
 };
 
 GuiPlayer.handleRWKey = function() {
 	FileLog.write("Playback : Rewind");
+    if (SyncPlay.isEnabled && this.Status == "PLAYING") {
+    	SyncPlay.requestSeek((this.currentTime - 10000) * 10000);
+    	return;
+    }
     if(this.Status == "PLAYING") {
     	if (this.PlayMethod == "DirectPlay") {
     		FileLog.write("Playback : Rewind : Direct Play");
@@ -727,6 +765,11 @@ GuiPlayer.handleRWKey = function() {
     		FileLog.write("Playback : Rewind : Transcoding");
     		this.newPlaybackPosition((this.currentTime - 10000) * 10000);
     	}
+		//Show trickplay thumbnail at target position
+		if (Trickplay.isAvailable()) {
+			Trickplay.showThumbnail(Math.max(0, this.currentTime - 10000));
+			setTimeout(function() { Trickplay.hideThumbnail(); }, 3000);
+		}
 		document.getElementById("guiPlayer_Subtitles").style.bottom="100px";
 		if (document.getElementById("guiPlayer_Osd").style.opacity == 0) {
 			$('#guiPlayer_Osd').css('opacity',0).animate({opacity:1}, 500);
@@ -884,39 +927,66 @@ GuiPlayer.newPlaybackPosition = function(startPositionTicks) {
 };
 
 GuiPlayer.newSubtitleIndex = function (newSubtitleIndex) {
+	var wasBurnIn = this.playingBurnInSubtitle;
+	var isBurnIn = false;
+
+	if (newSubtitleIndex > -1) {
+		var subStream = this.playingMediaSource.MediaStreams[newSubtitleIndex];
+		if (subStream && !subStream.IsTextSubtitleStream) {
+			isBurnIn = true;
+		}
+	}
+
 	if (newSubtitleIndex == -1 && this.playingSubtitleIndex != null) {
 		//Turn Off Subtitles
 		this.PlayerDataSubtitle = null;
 		this.playingSubtitleIndex = -1;
 		this.subtitleShowingIndex = 0;
 		this.subtitleSeeking = false;
+		this.playingBurnInSubtitle = false;
 		document.getElementById("guiPlayer_Subtitles").innerHTML = "";
 		document.getElementById("guiPlayer_Subtitles").style.visibility = "hidden";
-		document.getElementById("GuiPlayer").focus();	
+
+		if (wasBurnIn) {
+			//Was burning in, need to restart without burn-in
+			FileLog.write("Subtitles : switching from burn-in to none, restarting playback");
+			var resumePosition = this.currentTime;
+			this.stopPlayback();
+			document.getElementById("GuiPlayer").focus();
+			var isFirstAudioIndex = (this.playingAudioIndex == GuiPlayer_Display.audioIndexes[0]) ? true : false;
+			var transcodeResult = GuiPlayer_Transcoding.start(this.PlayerData.Id, this.playingMediaSource, this.playingMediaSourceIndex, this.playingVideoIndex, this.playingAudioIndex, isFirstAudioIndex, -1);
+			GuiPlayer.startPlayback(transcodeResult, resumePosition);
+		} else {
+			document.getElementById("GuiPlayer").focus();
+		}
 	} else {
-		//Check its not already selected 
+		//Check its not already selected
 		if (newSubtitleIndex != this.playingSubtitleIndex) {
-			//Prevent displaying Subs while loading
-			this.subtitleSeeking = true; 
-			document.getElementById("guiPlayer_Subtitles").innerHTML = "";
-			document.getElementById("guiPlayer_Subtitles").style.visibility = "hidden";
-			
-			//Update SubtitleIndex and reset index
-			this.playingSubtitleIndex = newSubtitleIndex;
-			
-			//Load New Subtitle File
-			this.setSubtitles(this.playingSubtitleIndex);
-		    
-		    //Update subs index
-		    this.updateSubtitleTime(this.currentTime,"NewSubs");
-		    
-		    //Load Back to main page GUI
-		    document.getElementById("GuiPlayer").focus();
+			if (isBurnIn || wasBurnIn) {
+				//Switching to/from an image subtitle requires playback restart
+				FileLog.write("Subtitles : burn-in switch (wasBurnIn=" + wasBurnIn + ", isBurnIn=" + isBurnIn + "), restarting playback");
+				var resumePosition = this.currentTime;
+				this.stopPlayback();
+				document.getElementById("GuiPlayer").focus();
+				var isFirstAudioIndex = (this.playingAudioIndex == GuiPlayer_Display.audioIndexes[0]) ? true : false;
+				var transcodeResult = GuiPlayer_Transcoding.start(this.PlayerData.Id, this.playingMediaSource, this.playingMediaSourceIndex, this.playingVideoIndex, this.playingAudioIndex, isFirstAudioIndex, newSubtitleIndex);
+				GuiPlayer.startPlayback(transcodeResult, resumePosition);
+			} else {
+				//Text subtitle switch - no restart needed
+				this.subtitleSeeking = true;
+				document.getElementById("guiPlayer_Subtitles").innerHTML = "";
+				document.getElementById("guiPlayer_Subtitles").style.visibility = "hidden";
+
+				this.playingSubtitleIndex = newSubtitleIndex;
+				this.setSubtitles(this.playingSubtitleIndex);
+				this.updateSubtitleTime(this.currentTime,"NewSubs");
+				document.getElementById("GuiPlayer").focus();
+			}
 		} else {
 			//Do Nothing!
 			document.getElementById("GuiPlayer").focus();
-		}		
-	}	
+		}
+	}
 	//Keep the Subtitles menu up to date with the currently playing subs.
 	GuiPlayer_Display.playingSubtitleIndex = this.playingSubtitleIndex;
 };

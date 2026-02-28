@@ -123,6 +123,14 @@ RemoteControl.onMessage = function(rawData) {
 			RemoteControl.handleGeneralCommand(data);
 			break;
 
+		case "SyncPlayCommand":
+			SyncPlay.handleSyncPlayCommand(data);
+			break;
+
+		case "SyncPlayGroupUpdate":
+			SyncPlay.handleSyncPlayGroupUpdate(data);
+			break;
+
 		default:
 			// Ignore other message types (LibraryChanged, UserDataChanged, etc.)
 			break;

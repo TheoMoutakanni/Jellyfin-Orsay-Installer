@@ -82,6 +82,7 @@ GuiUsers.start = function(runAutoLogin) {
 			"</div>" +
 	    	"<div id='loginOptions' class='loginOptions'>" +
 	    		"<div id='ManualLogin'>Manual Login</div>" +
+	    		"<div id='QuickConnect'>Quick Connect</div>" +
 	    		"<div id='ChangeServer'>Change Server</div> " +
 	    		"<div><br>Available options for each page are shown at the bottom.<br>Once logged in, move left on any page to access the main menu.</div>" +
 	    	"</div></div>";
@@ -222,14 +223,24 @@ GuiUsers.keyDown = function()
 			if (this.selectedRow < 1) {
 				this.selectedRow = 0;
 				document.getElementById("ManualLogin").className = "offWhite";
+				document.getElementById("QuickConnect").className = "offWhite";
+				document.getElementById("ChangeServer").className = "offWhite";
 				GuiUsers.updateSelectedUser();
 			} else if (this.selectedRow == 1) {
 				this.isManualEntry = true;
 				document.getElementById("ManualLogin").className = "highlight1Text";
+				document.getElementById("QuickConnect").className = "offWhite";
 				document.getElementById("ChangeServer").className = "offWhite";
-				document.getElementById(this.UserData[this.selectedUser].Id).className = "User"; 
+				if (this.UserData.length > 0) {
+					document.getElementById(this.UserData[this.selectedUser].Id).className = "User";
+				}
 			} else if (this.selectedRow == 2) {
 				document.getElementById("ManualLogin").className = "offWhite";
+				document.getElementById("QuickConnect").className = "highlight1Text";
+				document.getElementById("ChangeServer").className = "offWhite";
+			} else if (this.selectedRow == 3) {
+				document.getElementById("ManualLogin").className = "offWhite";
+				document.getElementById("QuickConnect").className = "offWhite";
 				document.getElementById("ChangeServer").className = "highlight1Text";
 			}
 			break;
@@ -238,11 +249,19 @@ GuiUsers.keyDown = function()
 			if (this.selectedRow == 1) {
 				this.isManualEntry = true;
 				document.getElementById("ManualLogin").className = "highlight1Text";
+				document.getElementById("QuickConnect").className = "offWhite";
 				document.getElementById("ChangeServer").className = "offWhite";
-				document.getElementById(this.UserData[this.selectedUser].Id).className = "User"; 
-			} else if (this.selectedRow > 1) {
-				this.selectedRow = 2;
+				if (this.UserData.length > 0) {
+					document.getElementById(this.UserData[this.selectedUser].Id).className = "User";
+				}
+			} else if (this.selectedRow == 2) {
 				document.getElementById("ManualLogin").className = "offWhite";
+				document.getElementById("QuickConnect").className = "highlight1Text";
+				document.getElementById("ChangeServer").className = "offWhite";
+			} else if (this.selectedRow >= 3) {
+				this.selectedRow = 3;
+				document.getElementById("ManualLogin").className = "offWhite";
+				document.getElementById("QuickConnect").className = "offWhite";
 				document.getElementById("ChangeServer").className = "highlight1Text";
 			}
 			break;
@@ -295,9 +314,18 @@ GuiUsers.keyDown = function()
 			} else if (this.selectedRow == 1) {
 				GuiUsers_Manual.start();
 			} else if (this.selectedRow == 2) {
+				//Quick Connect - check if enabled on server first
+				var qcUrl = Server.getServerAddr() + "/QuickConnect/Enabled";
+				var qcData = Server.getContent(qcUrl);
+				if (qcData === true) {
+					GuiUsers_QuickConnect.start();
+				} else {
+					GuiNotifications.setNotification("Quick Connect is not enabled on this server.","Quick Connect");
+				}
+			} else if (this.selectedRow == 3) {
 				GuiPage_Servers.start();
 			}
-			break;	
+			break;
 		case tvKey.KEY_BLUE:
 			Server.setServerAddr("");
 			File.setServerEntry(null);

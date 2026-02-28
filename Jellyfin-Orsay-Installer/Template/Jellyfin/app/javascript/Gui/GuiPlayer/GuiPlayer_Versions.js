@@ -235,38 +235,38 @@ GuiPlayer_Versions.getMainStreamIndex = function(MediaSource, MediaSourceIndex) 
 	// these are reported by the server to be always on (unless specified by the user)
 	if (SubtitlePreference != "None") {
 		subtitleIndex = MediaStreams.findIndex(function(Stream) {
-			return Stream.IsTextSubtitleStream && Stream.IsForced;
+			return Stream.Type == "Subtitle" && Stream.IsForced;
 		});
 	}
-	
+
 	//Subtitle Mode = Default
 	// display native subtitles only if the audio stream (else server default) is not in the users native language
 	if (subtitleIndex == -1) {
 		if (SubtitlePreference != "None" && SubtitlePreference != "OnlyForced") {
 			subtitleIndex = MediaStreams.findIndex(function(Stream) {
-				if (Stream.IsTextSubtitleStream) {
+				if (Stream.Type == "Subtitle") {
 					var audioLanguage = MediaStreams[audioIndex].Language == null ? AudioLanguagePreferenece : MediaStreams[audioIndex].Language;
 					return audioLanguage !== SubtitleLanguage && Stream.Language === SubtitleLanguage;
-				} 
+				}
 			});
 		}
 	}
-	
+
 	//Subtitle Mode = Always Play Subtitles
 	if (subtitleIndex == -1) {
 		if (SubtitlePreference == "Always") {
 			// pick user native subtitle first
 			subtitleIndex = MediaStreams.findIndex(function(Stream) {
-				return Stream.IsTextSubtitleStream && Stream.Language === SubtitleLanguage;
+				return Stream.Type == "Subtitle" && Stream.Language === SubtitleLanguage;
 			});
 
 			// otherwise pick any available
 			if (subtitleIndex === -1) {
-				subtitleindex = MediaStreams.findIndex(function(Stream) {
-					return Stream.IsTextSubtitleStream;
+				subtitleIndex = MediaStreams.findIndex(function(Stream) {
+					return Stream.Type == "Subtitle";
 				});
 			}
-		}	
+		}
 	}
 	
 	//---------------------------------------------------------------------------

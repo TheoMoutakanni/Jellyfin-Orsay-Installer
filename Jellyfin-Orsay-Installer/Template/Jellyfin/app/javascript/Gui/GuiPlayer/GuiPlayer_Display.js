@@ -208,9 +208,9 @@ GuiPlayer_Display.createToolsMenu = function() {
 			}	
 		} 
 		
-		if (Stream.IsTextSubtitleStream) {
-			this.subtitleIndexes.push(index); //
-		} 
+		if (Stream.Type == "Subtitle") {
+			this.subtitleIndexes.push(index);
+		}
 	}
 	
 	if (this.PlayerData.Chapters !== undefined) {
@@ -380,6 +380,7 @@ GuiPlayer_Display.keyDownToolsSlider = function() {
 		case tvKey.KEY_RETURN:
 			alert("RETURN");
 			widgetAPI.blockNavigation(event);
+			Trickplay.hideThumbnail();
 			document.getElementById("guiPlayer_Tools_Slider").style.visibility = "hidden";
 			document.getElementById("GuiPlayer_Tools").focus();
 			break;	
@@ -389,7 +390,10 @@ GuiPlayer_Display.keyDownToolsSlider = function() {
 			var leftPos = (1800 * this.sliderCurrentTime / (this.PlayerData.RunTimeTicks / 10000))-20+60; //-20 half width of selector, +60 as left as progress bar is 30 from left
 			document.getElementById("guiPlayer_Tools_SliderBarCurrentTime").innerHTML = Support.convertTicksToTimeSingle(this.sliderCurrentTime);
 			document.getElementById("guiPlayer_Tools_SliderBarCurrentTime").style.left = leftPos-40+"px";
-			document.getElementById("guiPlayer_Tools_SliderBarCurrent").style.left = leftPos+"px";	
+			document.getElementById("guiPlayer_Tools_SliderBarCurrent").style.left = leftPos+"px";
+			if (Trickplay.isAvailable()) {
+				Trickplay.showThumbnail(this.sliderCurrentTime);
+			}
 			break;
 		case tvKey.KEY_RIGHT:
 			this.sliderCurrentTime = this.sliderCurrentTime + 30000; //30 seconds
@@ -397,10 +401,14 @@ GuiPlayer_Display.keyDownToolsSlider = function() {
 			var leftPos = (1800 * this.sliderCurrentTime / (this.PlayerData.RunTimeTicks / 10000))-20+60;
 			document.getElementById("guiPlayer_Tools_SliderBarCurrentTime").innerHTML = Support.convertTicksToTimeSingle(this.sliderCurrentTime);
 			document.getElementById("guiPlayer_Tools_SliderBarCurrentTime").style.left = leftPos-40+"px";
-			document.getElementById("guiPlayer_Tools_SliderBarCurrent").style.left = leftPos+"px";	
+			document.getElementById("guiPlayer_Tools_SliderBarCurrent").style.left = leftPos+"px";
+			if (Trickplay.isAvailable()) {
+				Trickplay.showThumbnail(this.sliderCurrentTime);
+			}
 			break;
 		case tvKey.KEY_ENTER:
 		case tvKey.KEY_PANEL_ENTER:
+			Trickplay.hideThumbnail();
 			document.getElementById("guiPlayer_Tools_Slider").style.visibility = "hidden";
 			if (document.getElementById("guiPlayer_Tools").style.opacity != 0) {
     			$('#guiPlayer_Tools').css('opacity',1).animate({opacity:0}, 500);
@@ -628,6 +636,9 @@ GuiPlayer_Display.updateDisplayedItemsSub = function() {
 					}
 				} else {
 					Name = "Unknown Language";
+				}
+				if (!this.playingMediaSource.MediaStreams[this.videoToolsSubOptions[index]].IsTextSubtitleStream) {
+					Name += " [burn-in]";
 				}
 				if (this.playingSubtitleIndex == this.videoToolsSubOptions[index]) {
 					Name += " - Showing";
