@@ -79,7 +79,7 @@ GuiPlayer_Transcoding.start = function(showId, MediaSource,MediaSourceIndex, vid
 	}
 	var url = Server.getServerAddr() + '/Videos/' + showId + streamparams + '&DeviceId='+Server.getDeviceID();
 	FileLog.write("Video : Transcode Status : " + transcodeStatus);
-	FileLog.write("Video : URL : " + url);
+	FileLog.write("Video : URL : " + Server.sanitizeUrl(url));
 
 	//Return results to Versions
 	//MediaSourceId,Url,transcodeStatus,videoIndex,audioIndex

@@ -2,23 +2,27 @@ var GuiPage_NewServer = {
 	elementIds : [ "1","2","3","4","port","host"],
 	inputs : [ null,null,null,null,null],
 	ready : [ false,false,false,false,false],
-
+	useHttps : false
 }
 
 GuiPage_NewServer.start = function() {
 	alert("Page Enter : GuiPage_NewServer");
 	GuiHelper.setControlButtons(null,null,null,null,"Return");
 	
+	//Reset protocol toggle
+	this.useHttps = false;
+
 	//Insert html into page
 	document.getElementById("pageContent").innerHTML = "<div class='GuiPage_NewServer12key'> \
 		<p style='padding-bottom:5px;'>Enter the IP address & port number of your Jellyfin server. <br>(You can leave the port blank for 8096)</p> \
+		<p style='padding-bottom:5px;'>Protocol: <span id='protocol' style='font-weight:bold;'>http</span> &nbsp; (Press GREEN to toggle http/https)</p> \
 		<form><input id='1' type='text' size='5'  maxlength='3' value=''/>. \
 		<input id='2' type='text' size='5'  maxlength='3' value=''/>. \
 		<input id='3' type='text' size='5'  maxlength='3' value=''/>. \
 		<input id='4' type='text' size='5'  maxlength='3' value=''/>: \
 		<input id='port' type='text' size='8'  maxlength='5'/></form> \ \
 		<p style='padding-top:10px;padding-bottom:5px'>OR</p> \
-		<p style='padding-bottom:5px'>Enter your server hostname here without http:// and <br>including : and port number.</p> \
+		<p style='padding-bottom:5px'>Enter your server URL here including http:// or https:// <br>and : port number.</p> \
 		<form><input id='host' style='z-index:10;' type='text' size='45' value=''/></form> \
 		</div>";
 	
@@ -106,21 +110,23 @@ var GuiPage_NewServer_Input  = function(id,previousId, nextId) {
             		//not valid
                 	GuiNotifications.setNotification("Please re-enter your server details.","Incorrect Details",true);
             	} else {
-            		document.getElementById("pageContent").focus();                                   
+            		document.getElementById("pageContent").focus();
                     //Timeout required to allow notification command above to be displayed
+                    // Host field: user enters full URL (with protocol) or bare host
                     setTimeout(function(){Server.testConnectionSettings(host,false);}, 1000);
             	}
-            } else {	
+            } else {
             	var Port = document.getElementById('port').value;
                 if (Port == "") {
                 	Port = "8096";
                 }
-                
-                var ip = IP1 + '.' +  IP2 + '.' +  IP3 + '.' +  IP4 + ':' + Port;
-                document.getElementById("pageContent").focus();                                   
-                //Timeout required to allow notification command above to be displayed    
-                setTimeout(function(){Server.testConnectionSettings(ip,false);}, 1000);
-                
+
+                var protocol = GuiPage_NewServer.useHttps ? "https://" : "http://";
+                var serverAddr = protocol + IP1 + '.' +  IP2 + '.' +  IP3 + '.' +  IP4 + ':' + Port;
+                document.getElementById("pageContent").focus();
+                //Timeout required to allow notification command above to be displayed
+                setTimeout(function(){Server.testConnectionSettings(serverAddr,false);}, 1000);
+
             }       
         });
         ime.setKeyFunc(tvKey.KEY_LEFT, function (keyCode) {
@@ -137,6 +143,11 @@ var GuiPage_NewServer_Input  = function(id,previousId, nextId) {
         });
         ime.setKeyFunc(tvKey.KEY_DOWN, function (keyCode) {
         	document.getElementById("host").focus();
+            return false;
+        });
+        ime.setKeyFunc(tvKey.KEY_GREEN, function (keyCode) {
+        	GuiPage_NewServer.useHttps = !GuiPage_NewServer.useHttps;
+        	document.getElementById("protocol").innerHTML = GuiPage_NewServer.useHttps ? "https" : "http";
             return false;
         });
         ime.setKeyFunc(tvKey.KEY_BLUE, function (keyCode) {

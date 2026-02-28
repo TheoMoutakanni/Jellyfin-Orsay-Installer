@@ -232,7 +232,7 @@ GuiPlayer.setSubtitles = function(selectedSubtitleIndex) {
 			//Set Colour & Size from User Settings
 			Support.styleSubtitles("guiPlayer_Subtitles");
 			
-		    var url = Server.getCustomURL("/Videos/"+ this.PlayerData.Id+"/"+this.playingMediaSource.Id+"/Subtitles/"+selectedSubtitleIndex+"/Stream.srt?api_key=" + Server.getAuthToken());
+		    var url = Server.getCustomURL("/Videos/"+ this.PlayerData.Id+"/"+this.playingMediaSource.Id+"/Subtitles/"+selectedSubtitleIndex+"/Stream.srt");
 		    this.PlayerDataSubtitle = Server.getSubtitles(url);
 			FileLog.write("Subtitles : loaded "+url);
 			

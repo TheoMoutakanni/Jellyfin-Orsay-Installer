@@ -411,7 +411,7 @@ GuiMusicPlayer.handleNextKey = function() {
 	} else {
 		//Play Next Item
 		this.videoURL = Server.getServerAddr() + '/Audio/'+this.queuedItems[this.currentPlayingItem].Id+'/Stream.mp3?static=true&MediaSource='+this.queuedItems[this.currentPlayingItem].MediaSources[0].Id + '&api_key=' + Server.getAuthToken();
-		alert ("Next " + this.videoURL);
+		alert ("Next " + Server.sanitizeUrl(this.videoURL));
 		//Start Playback
 		this.handlePlayKey();
 	}
