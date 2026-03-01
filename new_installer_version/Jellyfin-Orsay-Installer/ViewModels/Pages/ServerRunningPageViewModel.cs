@@ -56,18 +56,25 @@ public sealed partial class ServerRunningPageViewModel : ViewModelBase, IAsyncDi
     public async Task StartAsync()
     {
         var outputPath = _packager.GetDefaultOutputPath();
-        var result = _packager.BuildWidget(outputPath, "Jellyfin", IpAddress, Port);
+
+        // Start the server first to find which port actually binds
+        var actualPort = await _server.StartAsync(outputPath, IpAddress, [Port, AltPort]);
+
+        // Build the widget with the actual port so the download URL matches
+        var result = _packager.BuildWidget(outputPath, "Jellyfin", IpAddress, actualPort);
 
         if (result.IsFailure)
         {
             _logService.Log($"Failed to build widget: {result.Error}", LogLevel.Error);
+            await _server.StopAsync();
             return;
         }
 
         _logService.Log($"Widget packaged: {result.Value!.WidgetId} ({result.Value.ZipSize:N0} bytes)");
-        ServerUrl = result.Value.DownloadUrl;
+        if (actualPort != Port)
+            _logService.Log($"Note: Using port {actualPort} (port {Port} was unavailable)");
 
-        await _server.StartAsync(outputPath, IpAddress, [Port, AltPort]);
+        ServerUrl = result.Value.DownloadUrl;
         Status = Status with { IsRunning = true, ServerUrl = ServerUrl };
     }
 

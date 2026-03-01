@@ -35,9 +35,10 @@ public interface IOrsayServer : IAsyncDisposable
     /// </summary>
     /// <param name="rootPath">Root directory to serve files from.</param>
     /// <param name="ip">IP address to bind to.</param>
-    /// <param name="ports">Port numbers to listen on (binds to each independently; skips ports that fail).</param>
+    /// <param name="ports">Port numbers to listen on (tries all, then falls back to individual ports).</param>
     /// <param name="cancellationToken">Cancellation token.</param>
-    Task StartAsync(string rootPath, string ip, int[] ports, CancellationToken cancellationToken = default);
+    /// <returns>The primary port the server is actually listening on.</returns>
+    Task<int> StartAsync(string rootPath, string ip, int[] ports, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Stops the server.

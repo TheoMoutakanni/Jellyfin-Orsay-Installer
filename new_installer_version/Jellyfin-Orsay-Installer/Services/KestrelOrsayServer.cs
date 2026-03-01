@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
@@ -37,7 +38,7 @@ public sealed class KestrelOrsayServer : IOrsayServer
     public event Action<ServerRequest>? OnRequest;
     public event Action<string>? OnLog;
 
-    public Task StartAsync(string rootPath, string ip, int[] ports, CancellationToken cancellationToken = default)
+    public Task<int> StartAsync(string rootPath, string ip, int[] ports, CancellationToken cancellationToken = default)
     {
         if (_host != null)
             throw new InvalidOperationException("Server is already running");
@@ -48,26 +49,53 @@ public sealed class KestrelOrsayServer : IOrsayServer
         _widgetListRequested = false;
         _widgetDownloaded = false;
 
-        var boundPorts = new List<int>();
+        // Try binding with all ports first, then fall back to each port individually
+        try
+        {
+            _host = BuildHost(ports);
+            _host.Start();
+            OnLog?.Invoke($"Server started on port(s) {string.Join(", ", ports)}");
+            return Task.FromResult(ports[0]);
+        }
+        catch (Exception ex)
+        {
+            _host?.Dispose();
+            _host = null;
+            OnLog?.Invoke($"Warning: Could not bind all ports ({ex.Message}). Trying individually...");
+        }
 
-        _host = Host.CreateDefaultBuilder()
+        // Try each port individually — use the first one that works
+        Exception? lastException = null;
+        foreach (var port in ports)
+        {
+            try
+            {
+                _host = BuildHost([port]);
+                _host.Start();
+                OnLog?.Invoke($"Server started on port {port}");
+                return Task.FromResult(port);
+            }
+            catch (Exception ex)
+            {
+                _host?.Dispose();
+                _host = null;
+                lastException = ex;
+                OnLog?.Invoke($"Warning: Could not bind port {port} ({ex.Message})");
+            }
+        }
+
+        OnLog?.Invoke($"Error: Could not bind any port.");
+        throw lastException ?? new InvalidOperationException("No ports available");
+    }
+
+    private IHost BuildHost(int[] ports)
+    {
+        var urls = ports.Select(p => $"http://0.0.0.0:{p}").ToArray();
+
+        return Host.CreateDefaultBuilder()
             .ConfigureWebHostDefaults(w =>
             {
-                w.UseKestrel(options =>
-                 {
-                     foreach (var port in ports)
-                     {
-                         try
-                         {
-                             options.ListenAnyIP(port);
-                             boundPorts.Add(port);
-                         }
-                         catch (Exception)
-                         {
-                             OnLog?.Invoke($"Warning: Could not bind port {port} (in use or no permission)");
-                         }
-                     }
-                 })
+                w.UseUrls(urls)
                  .Configure(app =>
                  {
                      // Request logging middleware
@@ -108,18 +136,13 @@ public sealed class KestrelOrsayServer : IOrsayServer
 
                      app.UseStaticFiles(new StaticFileOptions
                      {
-                         FileProvider = new PhysicalFileProvider(_root),
+                         FileProvider = new PhysicalFileProvider(_root!),
                          ServeUnknownFileTypes = true,
                          ContentTypeProvider = contentTypeProvider
                      });
                  });
             })
             .Build();
-
-        _host.Start();
-        OnLog?.Invoke($"Server started on port(s) {string.Join(", ", boundPorts)}");
-
-        return Task.CompletedTask;
     }
 
     private void HandleRequest(ServerRequest request)
